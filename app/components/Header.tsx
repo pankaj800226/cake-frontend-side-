@@ -7,9 +7,9 @@ import { toast } from "sonner";
 import axios from "axios";
 import { api } from "../backendApi/api";
 import { useRouter } from "next/navigation";
+import { LogOut } from "lucide-react";
 
 const Header = () => {
-  // SSR Compatibility के लिए localStorage को useEffect में हैंडल किया है
   const [phone, setPhone] = useState<string | null>(null);
 
   useEffect(() => {
@@ -40,9 +40,9 @@ const Header = () => {
 
   return (
     <header className="w-full bg-white text-slate-800 shadow-sm border-b border-slate-100 sticky top-0 z-50">
-      <div className="max-w-7xl mx-auto px-4 h-14 flex items-center justify-between">
+      <div className="max-w-7xl mx-auto px-4 h-15 flex items-center justify-between">
 
-        <div className="relative w-32 h-8 flex items-center">
+        <div className="relative w-40 h-8 flex items-center">
           <Link href="/" underline="none">
             <Image
               src="/logo.png"
@@ -60,6 +60,8 @@ const Header = () => {
             <Button
               onClick={handleLogout}
               variant="contained"
+              startIcon={<LogOut />}
+                
               sx={{
                 background: "linear-gradient(135deg, #fb2c36 0%, #b81d24 100%)",
                 color: "#ffffff",

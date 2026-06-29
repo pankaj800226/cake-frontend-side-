@@ -29,6 +29,12 @@ const Login = () => {
         e.preventDefault();
         // Destructuring updated clean keys
         const { phone, password } = formData;
+
+        if (phone.length > 10) {
+            toast.error("10 digits allowed only");
+
+        }
+
         if (!phone || !password) {
             return toast.error("All fields are required");
         }

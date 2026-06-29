@@ -7,13 +7,17 @@ interface CakeSize {
     weight: string;
     price: number;
 }
-
-interface CakeItem {
+export interface CakeItem {
     _id: string;
     title: string;
+    slug: string;
     category?: any;
     photo: string;
+    des?: string;
+    eggless?: string;
+    callUsForInstantHelpNo?: string;
     sizes: CakeSize[];
+    categoryName: string;
 }
 
 interface Category {
@@ -24,7 +28,7 @@ interface Category {
 interface CategoryFilterProps {
     allCakes: CakeItem[];
     allCategories: Category[];
-    onFilterChange: (filtered: CakeItem[]) => void;
+    onFilterChange: React.Dispatch<React.SetStateAction<CakeItem[]>>;
 }
 
 const CategoryFilter: React.FC<CategoryFilterProps> = ({

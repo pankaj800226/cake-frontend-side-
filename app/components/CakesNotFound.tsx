@@ -2,11 +2,9 @@ import React from 'react';
 import Image from 'next/image'; // or 'import Image from "next/image"' depending on your framework
 import logo from '../assests/logo.png';
 
-interface CakesProps {
-    cake: string;
-}
 
-const CakesNotFound: React.FC<CakesProps> = ({ cake }) => {
+
+const CakesNotFound = () => {
     
     // Function to trigger a complete page reload/refresh
     const handleRefresh = () => {
@@ -32,7 +30,7 @@ const CakesNotFound: React.FC<CakesProps> = ({ cake }) => {
                     No Results
                 </p>
                 <h3 className="text-lg font-black text-gray-900 tracking-tight">
-                    {cake} Cake Not Found
+                     Cake Not Found
                 </h3>
                 <p className="text-sm text-gray-500 max-w-xs">
                     We couldn't find any cakes matching this selection. Try refreshing the menu.

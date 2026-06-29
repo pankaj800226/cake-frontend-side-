@@ -10,7 +10,7 @@ import { useRouter } from 'next/navigation';
 
 const Register = () => {
     const [showPassword, setShowPassword] = useState(false);
-    
+
     const [formData, setFormData] = useState({
         username: '',
         phone: '',
@@ -31,6 +31,11 @@ const Register = () => {
         e.preventDefault();
         const { username, phone, password } = formData;
 
+        if (phone.length > 10) {
+            toast.error("10 digits allowed only");
+
+        }
+
         if (!username || !phone || !password) {
             toast.error("All fields are required");
             return;
@@ -40,15 +45,20 @@ const Register = () => {
             setBtnLoading(true);
             const res = await axios.post(`${api}/api/userAuth/userRegister`, { username, phone, password });
 
-            if (res.data.code === 409) {
-                toast.error("User already exists"); 
+            if (res.data.code === 400) {
+                toast.error("10 digits allowed only")
+
+            } else if (res.data.code === 409) {
+                toast.error("User already exists");
+
             } else if (res.data.code === 200) {
                 toast.success("Registered successfully!");
                 router.push('/login');
             }
-        } catch (error) {
+
+        } catch (error: any) {
             console.error(error);
-            toast.error("Something went wrong. Please try again.");
+            toast.error(`${error.message}`);
         } finally {
             setBtnLoading(false);
         }
@@ -83,7 +93,7 @@ const Register = () => {
                             <User className="absolute left-3.5 w-4 h-4 text-stone-400 pointer-events-none" />
                             <input
                                 type="text"
-                                name="username" 
+                                name="username"
                                 value={formData.username}
                                 onChange={handleInputChange}
                                 placeholder="chef_wonder"
@@ -102,7 +112,7 @@ const Register = () => {
                             <input
                                 type="text"
                                 inputMode="numeric"
-                                name="phone" 
+                                name="phone"
                                 value={formData.phone}
                                 onChange={handleInputChange}
                                 placeholder="123456789"
@@ -143,7 +153,7 @@ const Register = () => {
                     {/* Action Trigger Button */}
                     <button
                         type="submit"
-                        disabled={btnLoading} 
+                        disabled={btnLoading}
                         className="w-full mt-2 bg-pink-600 hover:bg-pink-700 active:scale-[0.99] disabled:opacity-70 disabled:cursor-not-allowed text-white font-bold py-3.5 rounded-xl shadow-[0_4px_12px_rgba(219,39,119,0.15)] hover:shadow-[0_6px_20px_rgba(219,39,119,0.25)] transition-all text-sm cursor-pointer tracking-wide uppercase text-center"
                     >
                         {btnLoading ? "Loading..." : 'Register'}

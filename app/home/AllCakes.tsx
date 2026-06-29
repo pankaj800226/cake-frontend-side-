@@ -5,9 +5,10 @@ import Link from 'next/link';
 import CategoryFilter from './CategoryFilter';
 import { useEffect, useState } from 'react';
 import axios from 'axios';
-import Error from './Error';
-import Loading from './Loading';
+import Error from '../components/Error';
+import Loading from '../components/Loading';
 import { api } from '../backendApi/api';
+import CakesNotFound from '../components/CakesNotFound';
 
 interface CakeSize { weight: string; price: number; _id?: string; }
 interface CakeItem {
@@ -36,8 +37,6 @@ const AllCakes = () => {
     const [loading, setLoading] = useState(false);
 
 
-    console.log(allCakes);
-    
     // Fetch all cakes
     useEffect(() => {
         const fetchCakes = async () => {
@@ -45,10 +44,10 @@ const AllCakes = () => {
                 setLoading(true);
                 const res = await axios.get(`${api}/api/cakes/find/cakes`);
                 setAllCakes(res.data);
-                setFilteredCakes(res.data); 
-            } catch (error) {
+                setFilteredCakes(res.data);
+            } catch (error:any) {
                 console.error("Error fetching API database rows:", error);
-                setError("Failed to load cakes registry");
+                setError(`error: ${error?.message || error}`);
             } finally {
                 setLoading(false);
             }
@@ -62,8 +61,9 @@ const AllCakes = () => {
             try {
                 const res = await axios.get(`${api}/api/category/get/category`);
                 setAllCategory(res.data);
-            } catch (error) {
+            } catch (error:any) {
                 console.error("Error fetching categories:", error);
+                setError(`error: ${error?.message || error}`);
             }
         };
         fetchCategory();
@@ -91,13 +91,7 @@ const AllCakes = () => {
                 </div>
 
                 {filteredCakes.length === 0 ? (
-                    <div className="flex flex-col items-center justify-center py-24 text-center border border-dashed border-pink-100 rounded-3xl bg-white shadow-sm max-w-xl mx-auto p-6 mt-8">
-                        <span className="text-4xl mb-4 animate-pulse">🍰</span>
-                        <h3 className="text-lg font-bold text-stone-700">Gallery Empty</h3>
-                        <p className="text-stone-400 text-xs mt-1 max-w-xs">
-                            No artisan options found matching your currently active menu filters.
-                        </p>
-                    </div>
+                   <CakesNotFound/>
                 ) : (
                     <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 lg:gap-8 xl:gap-10 mt-8 md:pb-12">
                         {filteredCakes.map((item, index) => (

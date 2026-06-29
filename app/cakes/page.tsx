@@ -1,5 +1,5 @@
 import React from 'react'
-import AllCakes from '../components/AllCakes';
+import AllCakes from '../home/AllCakes';
 
 const page = () => {
   return (
