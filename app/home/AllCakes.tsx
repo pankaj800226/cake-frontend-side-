@@ -45,7 +45,7 @@ const AllCakes = () => {
                 const res = await axios.get(`${api}/api/cakes/find/cakes`);
                 setAllCakes(res.data);
                 setFilteredCakes(res.data);
-            } catch (error:any) {
+            } catch (error: any) {
                 console.error("Error fetching API database rows:", error);
                 setError(`error: ${error?.message || error}`);
             } finally {
@@ -61,7 +61,7 @@ const AllCakes = () => {
             try {
                 const res = await axios.get(`${api}/api/category/get/category`);
                 setAllCategory(res.data);
-            } catch (error:any) {
+            } catch (error: any) {
                 console.error("Error fetching categories:", error);
                 setError(`error: ${error?.message || error}`);
             }
@@ -91,7 +91,7 @@ const AllCakes = () => {
                 </div>
 
                 {filteredCakes.length === 0 ? (
-                   <CakesNotFound/>
+                    <CakesNotFound />
                 ) : (
                     <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 lg:gap-8 xl:gap-10 mt-8 md:pb-12">
                         {filteredCakes.map((item, index) => (
@@ -101,16 +101,29 @@ const AllCakes = () => {
                             >
                                 <Link href={`/cakes/${item._id}`} className="w-full h-full block relative">
                                     <div className="relative w-full aspect-[4/5] overflow-hidden bg-stone-50">
+                                        {/* Product Image */}
                                         <Image
                                             src={item.photo[0]}
                                             alt={item.title}
                                             fill
                                             priority={index < 3}
-                                            sizes="(max-w-768px) 100vw, (max-w-1200px) 50vw, 33vw"
+                                            sizes="(max-width:768px) 100vw, (max-width:1200px) 50vw, 33vw"
                                             className="object-cover object-center transition-transform duration-1000 ease-out group-hover:scale-105"
                                         />
+
+                                        {/* Watermark Logo */}
+                                        <Image
+                                            src="/logo.png"
+                                            alt="Logo"
+                                            width={55}
+                                            height={55}
+                                            className="absolute top-3 right-3 z-20 opacity-30 saturate-100 rounded-full pointer-events-none select-none"
+                                        />
+
+                                        {/* Gradient */}
                                         <div className="absolute inset-0 bg-gradient-to-t from-stone-900/95 via-stone-900/40 to-transparent opacity-80 group-hover:opacity-90 transition-opacity duration-500" />
-                                        <span className="absolute top-4 left-4 font-sans text-[10px] font-bold text-white/80 tracking-widest bg-stone-900/40 backdrop-blur-md px-2 py-1 rounded-md border border-white/10">
+
+                                        <span className="absolute top-4 left-4 z-20 font-sans text-[10px] font-bold text-white/80 tracking-widest bg-stone-900/40 backdrop-blur-md px-2 py-1 rounded-md border border-white/10">
                                             {index + 1 < 10 ? `0${index + 1}` : index + 1}
                                         </span>
                                     </div>

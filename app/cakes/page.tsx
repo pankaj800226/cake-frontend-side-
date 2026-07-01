@@ -1,4 +1,3 @@
-import React from 'react'
 import AllCakes from '../home/AllCakes';
 
 const page = () => {

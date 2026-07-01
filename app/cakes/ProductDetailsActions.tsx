@@ -5,7 +5,10 @@ import AccordionDetails from '@mui/material/AccordionDetails';
 import Typography from '@mui/material/Typography';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import { FiCheck, FiMessageSquare, FiMinus, FiPlus, FiShoppingBag } from 'react-icons/fi';
-import { Rating as MuiRating } from "@mui/material";
+import { Link, Rating as MuiRating } from "@mui/material";
+import { toast } from 'sonner';
+import axios from 'axios';
+import { api } from '../backendApi/api';
 
 
 interface CakeSize {
@@ -31,6 +34,7 @@ interface CakeItem {
     sizes: CakeSize[];
     selectedFlavor?: CakeFlavor[];
     averageRating: number
+    stock: number
 }
 
 interface ProductRightSideDataProps {
@@ -86,7 +90,7 @@ const ProductDetailsActions = ({
 
                     {/* rating show */}
                     <div
-                     className="flex items-center gap-2">
+                        className="flex items-center gap-2">
                         <MuiRating
                             value={averageRating}
                             precision={0.1}
@@ -105,7 +109,7 @@ const ProductDetailsActions = ({
                         Eggless
                     </span>
 
-                    
+
 
                 </div>
             </div>
@@ -194,25 +198,47 @@ const ProductDetailsActions = ({
 
                 <div className="space-y-2">
                     <p className="text-[11px] text-stone-400 font-bold uppercase tracking-widest">Quantity</p>
-                    <div className="flex items-center gap-1 bg-stone-100/70 border border-stone-200/40 rounded-xl p-1 select-none w-fit">
-                        <button
-                            type="button"
-                            onClick={() => setQuantity((prev) => Math.max(1, prev - 1))}
-                            className="w-7 h-7 rounded-lg flex items-center justify-center text-stone-600 hover:bg-white transition cursor-pointer"
-                        >
-                            <FiMinus className="w-3" />
-                        </button>
-                        <span className="w-8 text-center font-sans font-extrabold text-stone-800 text-xs">
-                            {quantity}
-                        </span>
-                        <button
-                            type="button"
-                            onClick={() => setQuantity((prev) => prev + 1)}
-                            className="w-7 h-7 rounded-lg flex items-center justify-center text-stone-600 hover:bg-white transition cursor-pointer"
-                        >
-                            <FiPlus className="w-3" />
-                        </button>
+
+                    <div className='flex justify-between'>
+                        {/* + -  */}
+                        <div className="flex items-center gap-1 bg-stone-100/70 border border-stone-200/40 rounded-xl p-1 select-none w-fit">
+
+                            <button
+                                type="button"
+                                onClick={() => setQuantity(prev => Math.max(1, prev - 1))}
+                                className="w-7 h-7 rounded-lg flex items-center justify-center text-stone-600 hover:bg-white transition cursor-pointer"
+                            >
+                                <FiMinus className="w-3" />
+                            </button>
+
+                            <span className="w-8 text-center font-sans font-extrabold text-stone-800 text-xs">
+                                {quantity}
+                            </span>
+                            <button
+                                type="button"
+                                onClick={() => {
+                                    if (quantity >= cakesDetails.stock) {
+                                        toast.error(`Only ${cakesDetails.stock} cake(s) available`)
+                                        return
+                                    }
+
+                                    setQuantity(prev => prev + 1)
+                                }}
+                                className="w-7 h-7 rounded-lg flex items-center justify-center text-stone-600 hover:bg-white transition cursor-pointer"
+                            >
+                                <FiPlus className="w-3" />
+                            </button>
+                        </div>
+
+
+                        {/*  stock check  */}
+                        {cakesDetails.stock <= 5 && cakesDetails.stock > 0 && (
+                            <p className="text-sm text-orange-500 font-semibold">
+                                Only {cakesDetails.stock} left in stock
+                            </p>
+                        )}
                     </div>
+
                 </div>
             </div>
 
@@ -260,6 +286,14 @@ const ProductDetailsActions = ({
                     </button>
                 </div>
             </div>
+
+
+
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+
+            </div>
+                        
         </div>
     )
 }

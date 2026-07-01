@@ -27,6 +27,7 @@ import Error from "@/app/components/Error";
 import ProductDetailsActions from "../ProductDetailsActions";
 import { pre } from "framer-motion/m";
 import Rating from "@/app/home/RatingSystem/Rating";
+import MatchCategory from "../MatchCategory";
 
 interface CakeSize {
     weight: string;
@@ -51,6 +52,7 @@ interface CakeItem {
     sizes: CakeSize[];
     selectedFlavor?: CakeFlavor[];
     averageRating: number
+    stock: number
 }
 
 type Props = {
@@ -73,11 +75,6 @@ const CakeDetails = ({ params }: Props) => {
     const [selectedImage, setSelectedImage] = useState(0);
     const [_, setRatings] = useState([]);
     const [averageRating, setAverageRating] = useState<number>(0);
-
-
-    console.log(averageRating);
-
-
 
 
     // btn loading 
@@ -236,104 +233,7 @@ const CakeDetails = ({ params }: Props) => {
         setShippingInfo((prev) => ({ ...prev, [name]: value }))
     }
 
-    // handle order 
-    const handleOrderSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-        e.preventDefault();
-        const { name, phone, date } = customer;
-
-        if (!name || !phone || !date) {
-            toast.error("All fields are required");
-            return;
-        }
-
-        try {
-            setOrderLoader(true)
-            await axios.post(
-                `${api}/api/order/create/order`,
-                {
-                    cakeId: cakesDetails._id,
-                    selectedSize: size,
-                    selectedFlavor: flavor,
-                    quantity,
-                    totalPrice,
-                    comment,
-                    customer
-                },
-                { withCredentials: true }
-            );
-        } catch (err: any) {
-            console.error("Order API backup logs:", err);
-            setError(`error: ${err?.message || err}`);
-        } finally {
-            setOrderLoader(false)
-        }
-
-        const flavorNamesString = flavor.length > 0 ? flavor.map(f => f.flavorName).join(", ") : "Standard";
-
-        const message =
-            `Hi, I want to order:\n\n` +
-            `🍰 *Cake:* ${cakesDetails.title}\n` +
-            `⚖️ *Weight:* ${size?.weight || "N/A"}\n` +
-            `🍫 *Flavor Additions:* ${flavorNamesString}\n` +
-            `💳 *Extra Addons Cost:* ₹${extraFlavorPrice}\n\n` +
-            `📦 *Quantity:* ${quantity}\n` +
-            `💰 *Total Price:* ₹${totalPrice}\n\n` +
-            `👤 *Customer Details:*\n` +
-            `• *Name:* ${customer.name}\n` +
-            `• *Phone:* ${customer.phone}\n` +
-            `• *Table No:* ${customer.tableNo}\n` +
-            `• *Date:* ${customer.date}\n` +
-            `• *Instructions:* ${comment || "None"}`;
-
-        const url = `https://wa.me/91${phone}?text=${encodeURIComponent(message)}`;
-        window.open(url, "_blank");
-        setOpen(false);
-    };
-
-    // handle booking now
-    const handleBookingNow = async (e: React.FormEvent<HTMLFormElement>) => {
-        e.preventDefault()
-        const { username, phone, address, pincode, orderDate, pickupdate } = shippingInfo
-
-        if (!username || !phone || !address || !pincode || !orderDate || !pickupdate) {
-            toast.error("All fields are required")
-            return
-        }
-
-        try {
-            setBookLoader(true)
-            await axios.post(
-                `${api}/api/booking/product/book`,
-                {
-                    cakeId: cakesDetails._id,
-                    selectedSize: size,
-                    selectedFlavor: flavor,
-                    quantity,
-                    totalPrice,
-                    comment,
-                    username,
-                    phone,
-                    address,
-                    pincode,
-                    orderDate,
-                    pickupdate
-                },
-                { withCredentials: true }
-            )
-
-            toast.success("Booking Successfully")
-            setShippingOpen(false)
-        } catch (error: any) {
-            console.log(error);
-            toast.error(`error${error}`)
-            setError(`error: ${error?.message || error}`);
-        } finally {
-            setBookLoader(false)
-        }
-    }
-
     // autometic pincode throught addres show
-
     const handlePincodeChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
         const pincode = e.target.value
 
@@ -361,6 +261,122 @@ const CakeDetails = ({ params }: Props) => {
             }
         } catch (error) {
             console.log(error);
+        }
+    }
+
+    // handle order 
+    const handleOrderSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+        e.preventDefault();
+
+        const { name, phone, date } = customer;
+
+        if (!name || !phone || !date) {
+            toast.error("All fields are required");
+            return;
+        }
+
+        try {
+            setOrderLoader(true);
+
+            const response = await axios.post(
+                `${api}/api/order/create/order`,
+                {
+                    cakeId: cakesDetails._id,
+                    selectedSize: size,
+                    selectedFlavor: flavor,
+                    quantity,
+                    totalPrice,
+                    comment,
+                    customer
+                },
+                { withCredentials: true }
+            );
+
+            toast.success(response.data.message);
+
+            // WhatsApp message
+            const flavorNamesString =
+                flavor.length > 0
+                    ? flavor.map(f => f.flavorName).join(", ")
+                    : "Standard";
+
+            const message =
+                `Hi, I want to order:\n\n` +
+                `🍰 *Cake:* ${cakesDetails.title}\n` +
+                `⚖️ *Weight:* ${size?.weight || "N/A"}\n` +
+                `🍫 *Flavor Additions:* ${flavorNamesString}\n` +
+                `💳 *Extra Addons Cost:* ₹${extraFlavorPrice}\n\n` +
+                `📦 *Quantity:* ${quantity}\n` +
+                `💰 *Total Price:* ₹${totalPrice}\n\n` +
+                `👤 *Customer Details:*\n` +
+                `• *Name:* ${customer.name}\n` +
+                `• *Phone:* ${customer.phone}\n` +
+                `• *Table No:* ${customer.tableNo}\n` +
+                `• *Date:* ${customer.date}\n` +
+                `• *Instructions:* ${comment || "None"}`;
+
+            const url = `https://wa.me/91${phone}?text=${encodeURIComponent(message)}`;
+
+            window.open(url, "_blank");
+
+            setOpen(false);
+
+        } catch (err: any) {
+            console.log(err);
+
+            toast.error(
+                err.response?.data?.message
+            );
+        } finally {
+            setOrderLoader(false);
+        }
+    };
+
+
+    // handle booking product
+    const handleBookingNow = async (e: React.FormEvent<HTMLFormElement>) => {
+        e.preventDefault()
+        const { username, phone, address, pincode, orderDate, pickupdate } = shippingInfo
+
+        if (!username || !phone || !address || !pincode || !orderDate || !pickupdate) {
+            toast.error("All fields are required")
+            return
+        }
+
+        try {
+            setBookLoader(true)
+            const response = await axios.post(
+                `${api}/api/booking/product/book`,
+                {
+                    cakeId: cakesDetails._id,
+                    selectedSize: size,
+                    selectedFlavor: flavor,
+                    quantity,
+                    totalPrice,
+                    comment,
+                    username,
+                    phone,
+                    address,
+                    pincode,
+                    orderDate,
+                    pickupdate
+                },
+                { withCredentials: true }
+            )
+
+            toast.success(response.data.message);
+
+            toast.success("Booking Successfully")
+
+            setShippingOpen(false)
+        } catch (error: any) {
+            console.log(error);
+
+            toast.error(
+                error.response?.data?.message
+            );
+        } finally {
+            setBookLoader(false)
         }
     }
 
@@ -400,6 +416,14 @@ const CakeDetails = ({ params }: Props) => {
                                     className="object-cover"
                                 />
                             )}
+
+                            <Image
+                                src="/logo.png"
+                                alt="Logo"
+                                width={55}
+                                height={55}
+                                className="absolute top-3 right-3 z-20 opacity-30 saturate-100 rounded-full pointer-events-none select-none"
+                            />
                         </div>
                     </div>
 
@@ -723,7 +747,14 @@ const CakeDetails = ({ params }: Props) => {
                 </form>
             </Dialog >
 
+
+            {/* match categotry  */}
+            <MatchCategory
+                cakesDetails={cakesDetails}
+            />
             <Rating id={id} />
+
+
 
         </div >
     );
