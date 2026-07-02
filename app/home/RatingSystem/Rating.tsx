@@ -15,6 +15,7 @@ interface RatingData {
     date: string;
     comment: string;
     createdAt: string;
+    cakeId: string;
     userId: {
         _id: string;
         username: string;
@@ -23,17 +24,20 @@ interface RatingData {
 }
 
 interface RatingProps {
-    id: string | number;
+    cakeId: string | number;
 }
 
-const Rating = ({ id }: RatingProps) => {
+const Rating = ({ cakeId }: RatingProps) => {
     const [rating, setRating] = useState<number | null>(5);
     const [comment, setComment] = useState('');
     const [ratings, setRatings] = useState<RatingData[]>([]);
+    const [btnLoader, setBtnLoader] = useState(false)
 
+
+    // fetch rating
     const fetchingRating = async () => {
         try {
-            const res = await axios.get(`${api}/api/rating/get/rating/${id}`);
+            const res = await axios.get(`${api}/api/rating/get/rating/${cakeId}`);
             setRatings(res.data?.rating);
         } catch (error) {
             console.error("Error fetching ratings:", error);
@@ -41,8 +45,8 @@ const Rating = ({ id }: RatingProps) => {
     };
 
     useEffect(() => {
-        if (id) fetchingRating();
-    }, [id]);
+        if (cakeId) fetchingRating();
+    }, [cakeId]);
 
     // handle create rating
     const handleRating = async (e: React.FormEvent) => {
@@ -58,8 +62,9 @@ const Rating = ({ id }: RatingProps) => {
         }
 
         try {
+            setBtnLoader(true)
             const res = await axios.post(
-                `${api}/api/rating/create/rating/${id}`,
+                `${api}/api/rating/create/rating/${cakeId}`,
                 { rating, comment },
                 { withCredentials: true }
             );
@@ -75,11 +80,13 @@ const Rating = ({ id }: RatingProps) => {
         } catch (error: any) {
             console.error("Error submitting rating:", error);
             toast.error(error.response?.data?.message || error.message || "Something went wrong");
+        } finally {
+            setBtnLoader(false)
         }
     };
 
-    // Corrected update handler to accept values dynamically from the child component
-    const handleUpdate = async (editId: string, updatedRating: number, updatedComment: string) => {
+    // Corrected update handler
+    const handleUpdate = async (editcakeId: string, updatedRating: number, updatedComment: string) => {
         if (!updatedComment.trim()) {
             toast.error("Please share your feedback.");
             return;
@@ -87,7 +94,7 @@ const Rating = ({ id }: RatingProps) => {
 
         try {
             await axios.put(
-                `${api}/api/rating/edit/rating/${editId}`,
+                `${api}/api/rating/edit/rating/${editcakeId}`,
                 { rating: updatedRating, comment: updatedComment },
                 { withCredentials: true }
             );
@@ -101,12 +108,12 @@ const Rating = ({ id }: RatingProps) => {
     };
 
     // delete rating
-    const handleDelete = async (cakeId: string) => {
+    const handleDelete = async (targetCakeId: string) => {
         try {
-            await axios.delete(`${api}/api/rating/delete/rating/${cakeId}`,
+            await axios.delete(`${api}/api/rating/delete/rating/${targetCakeId}`,
                 { withCredentials: true }
             );
-            setRatings((prev) => prev.filter((item) => item._id !== cakeId));
+            setRatings((prev) => prev.filter((item) => item?.cakeId !== targetCakeId));
             toast.success("Deleted");
 
         } catch (error: any) {
@@ -134,10 +141,11 @@ const Rating = ({ id }: RatingProps) => {
                     </p>
                 </header>
 
-                <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 sm:gap-6 md:gap-8 items-start">
+                {/* Fixed Layout Grid Wrapper */}
+                <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 md:gap-8 items-start">
 
-                    {/* INPUT FORM */}
-                    <div className="order-last lg:order-first lg:col-span-5 lg:sticky lg:top-4">
+                    {/* LEFT SIDE: INPUT FORM */}
+                    <div className="lg:col-span-5 lg:sticky lg:top-6">
                         <motion.div
                             initial={{ opacity: 0, y: 15 }}
                             animate={{ opacity: 1, y: 0 }}
@@ -209,19 +217,20 @@ const Rating = ({ id }: RatingProps) => {
                                         }
                                     }}
                                 >
-                                    Publish Review
+                                    {btnLoader ? 'Loading...' : 'Submit'}
                                 </Button>
                             </form>
                         </motion.div>
                     </div>
 
-                    {/* REVIEWS LIST */}
-                    <AllRating
-                        id={id}
-                        ratings={ratings}
-                        handleDelete={handleDelete}
-                        handleUpdate={handleUpdate}
-                    />
+                    {/* RIGHT SIDE: REVIEWS LIST */}
+                    <div className="lg:col-span-7">
+                        <AllRating
+                            ratings={ratings}
+                            handleDelete={handleDelete}
+                            handleUpdate={handleUpdate}
+                        />
+                    </div>
 
                 </div>
             </div>

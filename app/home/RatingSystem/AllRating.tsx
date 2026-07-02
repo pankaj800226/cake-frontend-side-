@@ -29,7 +29,6 @@ interface Review {
 }
 
 interface AllRatingProps {
-    id: string | number; // Added to match how parent calls it, though optional for this component
     ratings: Review[];
     handleDelete: (id: string) => void;
     handleUpdate: (id: string, updatedRating: number, updatedComment: string) => Promise<void> | void;

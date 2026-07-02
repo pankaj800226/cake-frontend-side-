@@ -4,40 +4,52 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { api } from '../backendApi/api';
 import Loading from '../components/Loading';
+import { toast } from 'sonner';
 
 interface CakeType {
     _id: string;
     title: string;
     photo: string[];
     categoryName?: string;
+    slug: string
+}
+
+interface CakeCategory {
+    _id: string;
+    categoryName: string;
 }
 
 interface MatchCategoryProps {
     cakesDetails: {
         _id: string;
-        category: string;
+        category?: CakeCategory;  // 👈 Match the optional CakeCategory type
     };
 }
 
 const MatchCategory: React.FC<MatchCategoryProps> = ({ cakesDetails }) => {
     const [relatedCakes, setRelatedCakes] = useState<CakeType[]>([]);
     const [loading, setLoading] = useState(true);
-    
+
 
     useEffect(() => {
         const fetchRelatedCakes = async () => {
             if (cakesDetails?.category && cakesDetails?._id) {
                 try {
                     setLoading(true);
+
+                    
+                    const categoryId = cakesDetails.category._id
+
                     const response = await axios.get(
-                        `${api}/api/cakes/related/${cakesDetails.category}/${cakesDetails._id}`
+                        `${api}/api/cakes/related/${categoryId}/${cakesDetails._id}`
                     );
 
                     if (response.data.success) {
                         setRelatedCakes(response.data.cakes);
                     }
                 } catch (error) {
-                    console.error("Related cakes fetch karne me error aaya:", error);
+                    console.error("Error", error);
+                    toast.error(`${error}`)
                 } finally {
                     setLoading(false);
                 }
@@ -49,7 +61,7 @@ const MatchCategory: React.FC<MatchCategoryProps> = ({ cakesDetails }) => {
 
     if (loading) {
         return (
-           <Loading/>
+            <Loading />
         );
     }
 
@@ -72,7 +84,7 @@ const MatchCategory: React.FC<MatchCategoryProps> = ({ cakesDetails }) => {
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 mt-6">
                 {relatedCakes.map((cake) => (
                     <Link
-                        href={`/cakes/${cake._id}`}
+                        href={`/cakes/${cake.slug}`}
                         key={cake._id}
                         className="group bg-white rounded-2xl border border-gray-100 shadow-sm hover:shadow-xl transition-all duration-300 flex flex-col overflow-hidden"
                     >
@@ -89,7 +101,7 @@ const MatchCategory: React.FC<MatchCategoryProps> = ({ cakesDetails }) => {
                         {/* Cake Details Text */}
                         <div className="p-4 flex flex-col flex-grow">
                             <span className="text-xs font-semibold uppercase tracking-wider text-pink-500 mb-1">
-                                {cake.categoryName || 'Birthday Cake'}
+                                {cake.categoryName}
                             </span>
                             <h4 className="font-semibold text-gray-800 text-lg line-clamp-1 group-hover:text-pink-600 transition-colors duration-200">
                                 {cake.title}

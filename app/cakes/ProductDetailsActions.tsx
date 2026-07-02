@@ -5,11 +5,14 @@ import AccordionDetails from '@mui/material/AccordionDetails';
 import Typography from '@mui/material/Typography';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import { FiCheck, FiMessageSquare, FiMinus, FiPlus, FiShoppingBag } from 'react-icons/fi';
-import { Link, Rating as MuiRating } from "@mui/material";
+import {Rating as MuiRating } from "@mui/material";
 import { toast } from 'sonner';
-import axios from 'axios';
-import { api } from '../backendApi/api';
 
+
+interface CakeCategory {
+    _id: string;
+    categoryName: string;
+}
 
 interface CakeSize {
     weight: string;
@@ -26,7 +29,7 @@ interface CakeFlavor {
 interface CakeItem {
     _id: string;
     title: string;
-    category?: string;
+    category?: CakeCategory;
     photo: string[];
     des?: string;
     eggless?: string;

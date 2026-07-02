@@ -25,7 +25,6 @@ import { api } from "@/app/backendApi/api";
 import Loading from "@/app/components/Loading";
 import Error from "@/app/components/Error";
 import ProductDetailsActions from "../ProductDetailsActions";
-import { pre } from "framer-motion/m";
 import Rating from "@/app/home/RatingSystem/Rating";
 import MatchCategory from "../MatchCategory";
 
@@ -33,6 +32,12 @@ interface CakeSize {
     weight: string;
     price: number;
     _id?: string;
+}
+
+interface CakeCategory {
+    _id: string;
+    categoryName: string;
+
 }
 
 interface CakeFlavor {
@@ -44,15 +49,15 @@ interface CakeFlavor {
 interface CakeItem {
     _id: string;
     title: string;
-    category?: string;
+    category?: CakeCategory;
     photo: string[];
     des?: string;
     eggless?: string;
     callUsForInstantHelpNo?: string;
     sizes: CakeSize[];
     selectedFlavor?: CakeFlavor[];
-    averageRating: number
-    stock: number
+    averageRating: number;
+    stock: number;
 }
 
 type Props = {
@@ -61,6 +66,8 @@ type Props = {
 
 const CakeDetails = ({ params }: Props) => {
     const { id } = use(params);
+
+
 
 
     const [cakesDetails, setCakesDetails] = useState<CakeItem | null>(null);
@@ -75,6 +82,7 @@ const CakeDetails = ({ params }: Props) => {
     const [selectedImage, setSelectedImage] = useState(0);
     const [_, setRatings] = useState([]);
     const [averageRating, setAverageRating] = useState<number>(0);
+
 
 
     // btn loading 
@@ -120,7 +128,7 @@ const CakeDetails = ({ params }: Props) => {
         const fetchCakesId = async () => {
             try {
                 setLoading(true);
-                const res = await axios.get(`${api}/api/cakes/cakesId/${id}`);
+                const res = await axios.get(`${api}/api/cakes/cakesSlug/${id}`);
                 setCakesDetails(res.data);
             } catch (err: any) {
                 console.error("Error loading product detail:", err);
@@ -170,9 +178,11 @@ const CakeDetails = ({ params }: Props) => {
 
     // fetch rating calculate
     useEffect(() => {
+        if (!cakesDetails?._id) return;
+
         const fetchingRating = async () => {
             try {
-                const res = await axios.get(`${api}/api/rating/get/rating/${id}`);
+                const res = await axios.get(`${api}/api/rating/get/rating/${cakesDetails?._id}`);
 
                 const ratingData = res.data.rating || []
                 setRatings(ratingData)
@@ -196,7 +206,7 @@ const CakeDetails = ({ params }: Props) => {
         };
 
         fetchingRating()
-    }, [])
+    }, [cakesDetails?._id])
 
 
     if (!cakesDetails) return <Loading />;
@@ -749,10 +759,9 @@ const CakeDetails = ({ params }: Props) => {
 
 
             {/* match categotry  */}
-            <MatchCategory
-                cakesDetails={cakesDetails}
-            />
-            <Rating id={id} />
+            <MatchCategory cakesDetails={cakesDetails} />
+
+            <Rating cakeId={cakesDetails._id} />
 
 
 

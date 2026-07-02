@@ -99,7 +99,7 @@ const AllCakes = () => {
                                 key={item._id}
                                 className={`group relative flex flex-col overflow-hidden bg-white rounded-2xl border border-pink-100/40 shadow-[0_4px_20px_rgb(219,39,119,0.02)] transition-all duration-500 hover:shadow-xl hover:shadow-pink-600/5 ${index % 3 === 1 ? 'md:translate-y-5' : ''}`}
                             >
-                                <Link href={`/cakes/${item._id}`} className="w-full h-full block relative">
+                                <Link href={`/cakes/${item.slug}`} className="w-full h-full block relative">
                                     <div className="relative w-full aspect-[4/5] overflow-hidden bg-stone-50">
                                         {/* Product Image */}
                                         <Image
