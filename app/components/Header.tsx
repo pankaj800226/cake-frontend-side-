@@ -31,6 +31,7 @@ const Header = () => {
       localStorage.removeItem("phone");
 
       router.replace("/login");
+      toast.success("Logout")
     } catch (error) {
       console.error(error);
       toast.error("Failed to log out. Please try again.");
