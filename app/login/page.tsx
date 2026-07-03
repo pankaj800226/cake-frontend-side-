@@ -45,7 +45,7 @@ const Login = () => {
             // API payload keys changed to use phone and password
             const res = await axios.post(`${api}/api/userAuth/userLogin`,
                 { phone, password },
-                // { withCredentials: true }
+                { withCredentials: true }
             );
 
             if (res.data.code === 404) {
