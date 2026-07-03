@@ -22,6 +22,7 @@ export const config = {
         "/cakes",
         "/AllCakes",
         "/CategoryFilter",
+        "/home"
     ]
 }
 

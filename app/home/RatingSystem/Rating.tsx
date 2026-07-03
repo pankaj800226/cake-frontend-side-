@@ -108,18 +108,35 @@ const Rating = ({ cakeId }: RatingProps) => {
     };
 
     // delete rating
-    const handleDelete = async (targetCakeId: string) => {
-        try {
-            await axios.delete(`${api}/api/rating/delete/rating/${targetCakeId}`,
-                { withCredentials: true }
-            );
-            setRatings((prev) => prev.filter((item) => item?.cakeId !== targetCakeId));
-            toast.success("Deleted");
+    const handleDelete = async (productId: string) => {
 
-        } catch (error: any) {
-            console.log(error);
-            toast.error(`${error.message}`);
-        }
+        toast('Are you sure you want to delete this cake item?', {
+            duration: 5000,
+            action: {
+                label: "Delete",
+                onClick: async () => {
+                    try {
+                        await axios.delete(`${api}/api/rating/delete/rating/${productId}`,
+                            { withCredentials: true }
+                        );
+
+                        setRatings((prev) => prev.filter((item) => item?._id !== productId));
+                        toast.success("Deleted");
+
+                    } catch (error: any) {
+                        console.log(error);
+                        toast.error(`${error.message}`);
+                    }
+                }
+            },
+            cancel: {
+                label: "Cancel",
+                onClick: () => {
+                    toast.dismiss()
+                }
+            }
+        })
+
     };
 
     return (

@@ -48,6 +48,7 @@ const AllCakes = () => {
             } catch (error: any) {
                 console.error("Error fetching API database rows:", error);
                 setError(`error: ${error?.message || error}`);
+
             } finally {
                 setLoading(false);
             }
