@@ -13,7 +13,6 @@
 # testing
 /coverage
 
-/app/backendApi/
 
 # next.js
 /.next/
