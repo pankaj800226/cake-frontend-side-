@@ -7,7 +7,7 @@ function proxy(req: NextRequest) {
 
 
 
-  if (!token?.value && path.startsWith('/cakes')) {
+  if (!token && path.startsWith('/cakes')) {
     return NextResponse.redirect(
         new URL('/login', req.url)
     )
