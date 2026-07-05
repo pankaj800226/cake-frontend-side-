@@ -48,6 +48,8 @@ const Login = () => {
                 { withCredentials: true }
             );
 
+            console.log(res);
+            
             if (res.data.code === 404) {
                 toast.error("User Not Found");
             } else if (res.data.code === 405) {
