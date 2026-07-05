@@ -1,16 +1,9 @@
-import { NextResponse } from "next/server";
-import type { NextRequest } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 
 export function middleware(req: NextRequest) {
-  const token = req.cookies.get("userToken");
+  const token = req.cookies.get("userToken")?.value;
 
-  console.log("Token:", token);
-
-
-  console.log(req.cookies.getAll());
-  
-
-  if (!token?.value) {
+  if (!token) {
     return NextResponse.redirect(new URL("/login", req.url));
   }
 
@@ -18,11 +11,5 @@ export function middleware(req: NextRequest) {
 }
 
 export const config = {
-  matcher: [
-    "/",
-    "/allProduct",
-    "/cakes",
-    "/AllCakes",
-    "/CategoryFilter",
-  ],
+  matcher: ["/((?!_next|favicon.ico|login).*)"],
 };
