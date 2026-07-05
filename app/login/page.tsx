@@ -30,8 +30,9 @@ const Login = () => {
         // Destructuring updated clean keys
         const { phone, password } = formData;
 
-        if (phone.length > 10) {
+        if (phone.length !== 10) {
             toast.error("10 digits allowed only");
+            return
 
         }
 
@@ -60,7 +61,9 @@ const Login = () => {
                 localStorage.setItem("phone", res.data.phone);
 
                 toast.success("Welcome back!");
-                router.push('/');
+                // router.push('/');
+                window.location.href = "/";
+
             }
 
         } catch (error) {

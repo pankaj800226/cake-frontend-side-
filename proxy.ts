@@ -19,9 +19,6 @@ export default proxy;  // Default export with your function name
 export const config = {
   matcher: [
     "/",
-    "/allProduct",
     "/cakes",
-    "/AllCakes",
-    "/CategoryFilter",
   ],
 };
