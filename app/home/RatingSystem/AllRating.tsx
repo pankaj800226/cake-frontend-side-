@@ -93,12 +93,12 @@ const AllRating = ({ ratings, handleDelete, handleUpdate }: AllRatingProps) => {
                             <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3 sm:gap-4">
                                 <div className="flex items-center gap-3 flex-1 min-w-0">
                                     <div className="h-8 w-8 sm:h-9 sm:w-9 md:h-10 md:w-10 shrink-0 flex items-center justify-center rounded-lg sm:rounded-xl bg-slate-100 text-slate-600 text-xs font-bold tracking-wider border border-slate-200/40">
-                                        {review.userId.username ? review.userId.username.charAt(0).toUpperCase() : "?"}
+                                        {review?.userId?.username ? review.userId.username.charAt(0).toUpperCase() : "?"}
                                     </div>
                                     <div className="space-y-0.5 flex-1 min-w-0">
                                         <div className="flex items-center gap-2 flex-wrap">
                                             <h4 className="font-bold text-slate-800 text-xs sm:text-sm leading-snug truncate max-w-[120px] sm:max-w-[150px] md:max-w-[200px]">
-                                                {review.userId.username}
+                                                {review?.userId?.username}
                                             </h4>
                                             <span className="text-[9px] sm:text-[10px] font-bold text-emerald-700 bg-emerald-50/80 px-1.5 py-0.5 rounded">
                                                 {review.rating}.0
