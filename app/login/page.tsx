@@ -49,7 +49,7 @@ const Login = () => {
                 { withCredentials: true }
             );
 
-            console.log(res);
+            router.push('/');
             
             if (res.data.code === 404) {
                 toast.error("User Not Found");
@@ -61,7 +61,6 @@ const Login = () => {
                 localStorage.setItem("phone", res.data.phone);
 
                 toast.success("Welcome back!");
-                router.push('/');
 
             }
 
