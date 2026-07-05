@@ -12,6 +12,7 @@ import { LogOut, User } from "lucide-react";
 const Header = () => {
   const [phone, setPhone] = useState<string | null>(null);
   const [isMounted, setIsMounted] = useState(false);
+  const [btnLoader, setBtnLoader] = useState(false)
 
   useEffect(() => {
     setIsMounted(true);
@@ -24,6 +25,7 @@ const Header = () => {
 
   const handleLogout = async () => {
     try {
+      setBtnLoader(true)
       await axios.post(`${api}/api/userAuth/userLogout`, {}, { withCredentials: true });
 
       localStorage.removeItem("userId");
@@ -35,6 +37,8 @@ const Header = () => {
     } catch (error) {
       console.error(error);
       toast.error("Failed to log out. Please try again.");
+    } finally {
+      setBtnLoader(false)
     }
   };
 
@@ -42,7 +46,7 @@ const Header = () => {
     <header className="w-full bg-white text-neutral-800 border-b border-neutral-100 sticky top-0 z-50 backdrop-blur-md bg-white/95">
       {/* 🟢 Height ko h-18 se h-14 (3.5rem) kiya taaki header sleek lage */}
       <div className="max-w-7xl mx-auto px-6 h-14 flex items-center justify-between">
-        
+
         {/* 🟢 Logo container ka size w-48 h-10 se badha kar w-56 h-12 kiya */}
         <div className="relative w-56 h-12 flex items-center">
           <Link href="/" underline="none" className="block relative w-full h-full transition-opacity hover:opacity-90">
@@ -60,7 +64,7 @@ const Header = () => {
         <nav className="flex items-center gap-4">
           {/* Prevent Hydration Layout Shift */}
           {!isMounted ? (
-            <div className="w-24 h-9" /> 
+            <div className="w-24 h-9" />
           ) : phone ? (
             <Button
               onClick={handleLogout}
@@ -74,7 +78,7 @@ const Header = () => {
                 fontSize: "0.85rem",
                 borderRadius: "8px",
                 px: 3,
-                py: 0.8, // 🟢 Height choti ki toh padding thoda adjust kiya balance ke liye
+                py: 0.8,
                 boxShadow: "0 2px 8px rgba(251, 44, 54, 0.15)",
                 transition: "all 0.2s ease-in-out",
                 "&:hover": {
@@ -84,7 +88,7 @@ const Header = () => {
                 },
               }}
             >
-              Logout
+              {btnLoader ? "Loading..." : "Logout"}
             </Button>
           ) : (
             <Link

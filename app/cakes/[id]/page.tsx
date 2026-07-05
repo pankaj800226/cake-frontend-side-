@@ -390,6 +390,8 @@ const CakeDetails = ({ params }: Props) => {
         }
     }
 
+    const today = new Date().toISOString().split("T")[0];
+
 
     if (loading) return <Loading />;
     if (error) return <Error error={error} />;
@@ -542,6 +544,7 @@ const CakeDetails = ({ params }: Props) => {
                                 fullWidth
                                 margin="dense"
                                 label="Table / Seat Number"
+                                type="date"
                                 name="tableNo"
                                 variant="outlined"
                                 value={customer.tableNo}
@@ -549,7 +552,10 @@ const CakeDetails = ({ params }: Props) => {
                                 placeholder="E.g., Table 12"
                                 slotProps={{
                                     inputLabel: { shrink: true },
-                                    htmlInput: { style: { fontSize: '0.9rem', padding: '12px' } }
+                                    htmlInput: {
+                                        min: today,   // 👈 disables previous dates
+                                        style: { fontSize: '0.9rem', padding: '12px' }
+                                    }
                                 }}
                             />
 
@@ -564,7 +570,10 @@ const CakeDetails = ({ params }: Props) => {
                                 onChange={handleInputChange}
                                 slotProps={{
                                     inputLabel: { shrink: true },
-                                    htmlInput: { style: { fontSize: '0.9rem', padding: '12px' } }
+                                    htmlInput: {
+                                        min: today,   // 👈 disables previous dates
+                                        style: { fontSize: '0.9rem', padding: '12px' }
+                                    }
                                 }}
                             />
                         </div>
@@ -705,7 +714,10 @@ const CakeDetails = ({ params }: Props) => {
                                 onChange={handleOrderInputChange}
                                 slotProps={{
                                     inputLabel: { shrink: true },
-                                    htmlInput: { style: { fontSize: '0.9rem', padding: '12px' } }
+                                    htmlInput: {
+                                        min: today,   
+                                        style: { fontSize: '0.9rem', padding: '12px' }
+                                    }
                                 }}
                             />
 
@@ -720,7 +732,10 @@ const CakeDetails = ({ params }: Props) => {
                                 onChange={handleOrderInputChange}
                                 slotProps={{
                                     inputLabel: { shrink: true },
-                                    htmlInput: { style: { fontSize: '0.9rem', padding: '12px' } }
+                                    htmlInput: {
+                                        min: today,   
+                                        style: { fontSize: '0.9rem', padding: '12px' }
+                                    }
                                 }}
                             />
                         </div>
