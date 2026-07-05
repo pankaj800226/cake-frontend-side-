@@ -9,7 +9,7 @@ function proxy(req: NextRequest) {
   console.log(path);
   
 
-  if (!token && path.startsWith("/cakes")) {
+  if (!token && path.startsWith("/")) {
     return NextResponse.redirect(new URL("/login", req.url));
 
   }
