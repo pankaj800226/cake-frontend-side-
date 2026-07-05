@@ -6,10 +6,9 @@ function proxy(req: NextRequest) {
   const path = req.nextUrl.pathname;
 
 
-  console.log(path);
   
 
-  if (!token && path.startsWith("/")) {
+  if (!token?.value && path.startsWith("/cakes")) {
     return NextResponse.redirect(new URL("/login", req.url));
 
   }
@@ -22,6 +21,6 @@ export default proxy;
 export const config = {
   matcher: [
     "/",
-    "/cakes/:path*",
+    "/cakes",
   ],
 };
