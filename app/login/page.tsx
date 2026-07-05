@@ -59,7 +59,7 @@ const Login = () => {
                 localStorage.setItem("phone", res.data.phone);
 
                 toast.success("Welcome back!");
-                router.push('/cakes');
+                router.push('/');
 
             }
 
