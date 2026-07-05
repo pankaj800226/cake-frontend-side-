@@ -16,7 +16,7 @@ export default proxy;
 
 export const config = {
   matcher: [
-    "/",
+    // "/",
     "/cakes",
   ],
 };
