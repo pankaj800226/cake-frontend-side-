@@ -4,8 +4,6 @@ import type { NextRequest } from "next/server";
 function proxy(req: NextRequest) {
   const token = req.cookies.get("userToken");
 
-  console.log("Token:", token);
-  console.log(req.cookies.getAll());
 
   if (!token?.value) {
     return NextResponse.redirect(new URL("/login", req.url));
@@ -14,11 +12,11 @@ function proxy(req: NextRequest) {
   return NextResponse.next();
 }
 
-export default proxy;  // Default export with your function name
+export default proxy; 
 
 export const config = {
   matcher: [
-    // "/",
+    "/",
     "/cakes",
   ],
 };
