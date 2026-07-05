@@ -3,13 +3,10 @@ import type { NextRequest } from "next/server";
 
 function proxy(req: NextRequest) {
   const token = req.cookies.get("userToken");
-  const path = req.nextUrl.pathname;
+  // const path = req.nextUrl.pathname;
 
 
-  console.log(path);
-  
-
-  if (!token?.value) {
+  if (!token) {
     return NextResponse.redirect(new URL("/login", req.url));
   }
 
