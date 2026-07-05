@@ -6,17 +6,23 @@ function proxy(req: NextRequest) {
   const path = req.nextUrl.pathname;
 
 
-  
-
-  if (!token?.value && path.startsWith("/cakes")) {
-    return NextResponse.redirect(new URL("/login", req.url));
-
+  if (path === "/login") {
+    console.log("🟢 Login - ALLOWING");
+    return NextResponse.next();
   }
+
+  if (!token?.value) {
+    console.log("🔴 No token - Redirecting to /login");
+    return NextResponse.redirect(new URL("/login", req.url));
+  }
+
+  console.log("🟢 Token valid - ALLOWING");
+
 
   return NextResponse.next();
 }
 
-export default proxy; 
+export default proxy;
 
 export const config = {
   matcher: [
