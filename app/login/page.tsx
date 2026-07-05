@@ -60,6 +60,7 @@ const Login = () => {
 
                 toast.success("Welcome back!");
                 router.push('/');
+                window.location.assign('/')
 
             }
 
