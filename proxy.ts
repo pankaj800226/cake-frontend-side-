@@ -12,11 +12,11 @@ function proxy(req: NextRequest) {
   return NextResponse.next();
 }
 
-export default proxy; 
+export default proxy;
 
 export const config = {
   matcher: [
-    // "/",
-    "/cakes",
+    "/((?!api|_next/static|_next/image|favicon.ico).*)",
+    // ⚠️ Login matcher se hata diya, middleware mein handle karenge
   ],
 };
