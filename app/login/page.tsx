@@ -61,8 +61,7 @@ const Login = () => {
                 localStorage.setItem("phone", res.data.phone);
 
                 toast.success("Welcome back!");
-                // router.push('/');
-                window.location.href = "/";
+                router.push('/');
 
             }
 
