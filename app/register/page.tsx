@@ -7,9 +7,11 @@ import { toast } from 'sonner';
 import axios from 'axios';
 import { api } from '../backendApi/api';
 import { useRouter } from 'next/navigation';
+import Error from '../components/Error';
 
 const Register = () => {
     const [showPassword, setShowPassword] = useState(false);
+    const [error,setError] = useState('')
 
     const [formData, setFormData] = useState({
         username: '',
@@ -59,10 +61,17 @@ const Register = () => {
         } catch (error: any) {
             console.error(error);
             toast.error(`${error.message}`);
+            setError(
+                error.response?.data?.message ||
+                error.message
+            );
         } finally {
             setBtnLoading(false);
         }
     };
+
+    if(error) return <Error error={error}/>
+
 
     return (
         <div className="min-h-screen bg-[#FFFBFB] flex items-center justify-center p-4 antialiased">

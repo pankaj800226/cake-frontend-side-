@@ -47,7 +47,10 @@ const AllCakes = () => {
                 setFilteredCakes(res.data);
             } catch (error: any) {
                 console.error("Error fetching API database rows:", error);
-                setError(`error: ${error?.message || error}`);
+                setError(
+                    error.response?.data?.message ||
+                    error.message
+                );
 
             } finally {
                 setLoading(false);
@@ -64,7 +67,10 @@ const AllCakes = () => {
                 setAllCategory(res.data);
             } catch (error: any) {
                 console.error("Error fetching categories:", error);
-                setError(`error: ${error?.message || error}`);
+                setError(
+                    error.response?.data?.message ||
+                    error.message
+                );
             }
         };
         fetchCategory();

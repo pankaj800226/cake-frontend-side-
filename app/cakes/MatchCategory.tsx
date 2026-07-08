@@ -5,6 +5,7 @@ import Image from 'next/image';
 import { api } from '../backendApi/api';
 import Loading from '../components/Loading';
 import { toast } from 'sonner';
+import Error from '../components/Error';
 
 interface CakeType {
     _id: string;
@@ -29,6 +30,7 @@ interface MatchCategoryProps {
 const MatchCategory: React.FC<MatchCategoryProps> = ({ cakesDetails }) => {
     const [relatedCakes, setRelatedCakes] = useState<CakeType[]>([]);
     const [loading, setLoading] = useState(true);
+    const [error,setError] = useState('')
 
 
     useEffect(() => {
@@ -47,9 +49,13 @@ const MatchCategory: React.FC<MatchCategoryProps> = ({ cakesDetails }) => {
                     if (response.data.success) {
                         setRelatedCakes(response.data.cakes);
                     }
-                } catch (error) {
+                } catch (error:any) {
                     console.error("Error", error);
                     toast.error(`${error}`)
+                    setError(
+                        error.response?.data?.message ||
+                        error.message
+                    );
                 } finally {
                     setLoading(false);
                 }
@@ -64,6 +70,9 @@ const MatchCategory: React.FC<MatchCategoryProps> = ({ cakesDetails }) => {
             <Loading />
         );
     }
+
+    if(error) return <Error error={error}/>
+    
 
     // Empty State
     if (relatedCakes.length === 0) {

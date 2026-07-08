@@ -67,9 +67,6 @@ type Props = {
 const CakeDetails = ({ params }: Props) => {
     const { id } = use(params);
 
-
-
-
     const [cakesDetails, setCakesDetails] = useState<CakeItem | null>(null);
     const [loading, setLoading] = useState<boolean>(true);
     const [selectedSize, setSelectedSize] = useState<number>(0);
@@ -132,8 +129,11 @@ const CakeDetails = ({ params }: Props) => {
                 setCakesDetails(res.data);
             } catch (err: any) {
                 console.error("Error loading product detail:", err);
-                toast.error("Failed to load cake details");
-                setError(`error: ${err?.message || err}`);
+                toast.error(`${err.message}`);
+                setError(
+                    err.response?.data?.message ||
+                    err.message
+                );
             } finally {
                 setLoading(false);
             }
@@ -162,12 +162,16 @@ const CakeDetails = ({ params }: Props) => {
 
             } catch (error: any) {
                 console.log(error);
-                // toast.error(`error${error.message}`)
+                toast.error(`error${error.message}`)
                 if (error.response?.status === 404) {
                     return;
                 }
+                setError(
+                    error.response?.data?.message ||
+                    error.message
+                );
 
-                toast.error("Something went wrong");
+
 
             }
         }
@@ -200,8 +204,13 @@ const CakeDetails = ({ params }: Props) => {
 
 
 
-            } catch (error) {
+            } catch (error: any) {
                 console.error("Error fetching ratings:", error);
+                toast.error(`${error.message}`)
+                setError(
+                    error.response?.data?.message ||
+                    error.message
+                );
             }
         };
 
@@ -269,8 +278,12 @@ const CakeDetails = ({ params }: Props) => {
                 }))
 
             }
-        } catch (error) {
+        } catch (error: any) {
             console.log(error);
+            setError(
+                error.response?.data?.message ||
+                error.message
+            );
         }
     }
 
@@ -337,6 +350,12 @@ const CakeDetails = ({ params }: Props) => {
             toast.error(
                 err.response?.data?.message
             );
+
+            setError(
+                error.response?.data?.message ||
+                error.message
+            );
+
         } finally {
             setOrderLoader(false);
         }
@@ -381,6 +400,10 @@ const CakeDetails = ({ params }: Props) => {
             setShippingOpen(false)
         } catch (error: any) {
             console.log(error);
+            setError(
+                error.response?.data?.message ||
+                error.message
+            );
 
             toast.error(
                 error.response?.data?.message
@@ -715,7 +738,7 @@ const CakeDetails = ({ params }: Props) => {
                                 slotProps={{
                                     inputLabel: { shrink: true },
                                     htmlInput: {
-                                        min: today,   
+                                        min: today,
                                         style: { fontSize: '0.9rem', padding: '12px' }
                                     }
                                 }}
@@ -733,7 +756,7 @@ const CakeDetails = ({ params }: Props) => {
                                 slotProps={{
                                     inputLabel: { shrink: true },
                                     htmlInput: {
-                                        min: today,   
+                                        min: today,
                                         style: { fontSize: '0.9rem', padding: '12px' }
                                     }
                                 }}

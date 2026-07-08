@@ -7,9 +7,11 @@ import { toast } from 'sonner';
 import axios from 'axios';
 import { api } from '../backendApi/api';
 import { useRouter } from 'next/navigation';
+import Error from '../components/Error';
 
 const Login = () => {
     const [showPassword, setShowPassword] = useState(false);
+    const [error,setError] = useState('')
 
     const [formData, setFormData] = useState({
         phone: '',
@@ -59,18 +61,24 @@ const Login = () => {
                 localStorage.setItem("phone", res.data.phone);
 
                 toast.success("Welcome back!");
-                router.push('/cakes');
-                // window.location.assign('/')
+                router.push('/');
 
             }
 
-        } catch (error) {
+        } catch (error:any) {
             console.error(error);
             toast.error("Something went wrong. Please try again.");
+            setError(
+                error.response?.data?.message ||
+                error.message
+            );
         } finally {
             setBtnLoading(false);
         }
     };
+
+    if(error) return <Error error={error}/>
+    
 
     return (
         <div className="min-h-screen bg-[#FFFBFB] flex items-center justify-center p-4 antialiased">

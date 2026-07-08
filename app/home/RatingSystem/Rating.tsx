@@ -7,6 +7,8 @@ import { toast } from 'sonner';
 import axios from 'axios';
 import { api } from '@/app/backendApi/api';
 import AllRating from './AllRating';
+import Error from '@/app/components/Error';
+import Loading from '@/app/components/Loading';
 
 interface RatingData {
     _id: string;
@@ -32,15 +34,23 @@ const Rating = ({ cakeId }: RatingProps) => {
     const [comment, setComment] = useState('');
     const [ratings, setRatings] = useState<RatingData[]>([]);
     const [btnLoader, setBtnLoader] = useState(false)
-
+    const [error,setError] = useState('')
+    const [loading,setLoading] = useState(false)
 
     // fetch rating
     const fetchingRating = async () => {
         try {
+            setLoading(true)
             const res = await axios.get(`${api}/api/rating/get/rating/${cakeId}`);
             setRatings(res.data?.rating);
-        } catch (error) {
+        } catch (error:any) {
             console.error("Error fetching ratings:", error);
+            setError(
+                error.response?.data?.message ||
+                error.message
+            );
+        }finally{
+            setLoading(false)
         }
     };
 
@@ -80,6 +90,10 @@ const Rating = ({ cakeId }: RatingProps) => {
         } catch (error: any) {
             console.error("Error submitting rating:", error);
             toast.error(error.response?.data?.message || error.message || "Something went wrong");
+            setError(
+                error.response?.data?.message ||
+                error.message
+            );
         } finally {
             setBtnLoader(false)
         }
@@ -104,6 +118,10 @@ const Rating = ({ cakeId }: RatingProps) => {
         } catch (error: any) {
             console.error(error);
             toast.error(error.response?.data?.message || error.message || "Failed to update review");
+            setError(
+                error.response?.data?.message ||
+                error.message
+            );
         }
     };
 
@@ -126,6 +144,10 @@ const Rating = ({ cakeId }: RatingProps) => {
                     } catch (error: any) {
                         console.log(error);
                         toast.error(`${error.message}`);
+                        setError(
+                            error.response?.data?.message ||
+                            error.message
+                        );
                     }
                 }
             },
@@ -138,6 +160,9 @@ const Rating = ({ cakeId }: RatingProps) => {
         })
 
     };
+
+    if(error) return <Error error={error}/>
+    if(loading) return <Loading/>
 
     return (
         <div className="min-h-screen bg-slate-50/50 font-sans antialiased">
