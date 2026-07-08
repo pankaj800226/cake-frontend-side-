@@ -344,11 +344,11 @@ const CakeDetails = ({ params }: Props) => {
 
             setOpen(false);
 
-        } catch (err: any) {
-            console.log(err);
+        } catch (error: any) {
+            console.log(error);
 
             toast.error(
-                err.response?.data?.message
+                error.response?.data?.message
             );
 
             setError(
