@@ -61,7 +61,9 @@ const Login = () => {
                 localStorage.setItem("phone", res.data.phone);
 
                 toast.success("Welcome back!");
-                router.push('/');
+                
+                // Hard reload using window.location fixes the cookie reading bug on servers
+                window.location.href = "/";
 
             }
 

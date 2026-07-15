@@ -36,14 +36,13 @@ export function proxy(req: NextRequest) {
 
   // 2. अगर टोकन मौजूद है और यूजर फिर से /login पर जाने की कोशिश कर रहा है (लॉगिन के तुरंत बाद)
   if (token?.value && pathname === '/login') {
-    return NextResponse.redirect(new URL('/', req.url)); // या '/cakes' जो भी आपका होम रूट हो
+    return NextResponse.redirect(new URL('/', req.url)); 
   }
 
   return NextResponse.next();
 }
 
 export const config = {
-  // सुनिश्चित करें कि matcher में सुरक्षित पेज और login दोनों शामिल हैं ताकि Next.js सही पेलोड जनरेट करे
   matcher: [
     "/",
     "/cakes",
