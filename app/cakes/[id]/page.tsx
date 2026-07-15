@@ -386,6 +386,7 @@ const CakeDetails = ({ params }: Props) => {
 
 
     // handle booking product
+    // handle booking product
     const handleBookingNow = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault()
         const { username, phone, address, pincode, orderDate, pickupdate } = shippingInfo
@@ -417,8 +418,33 @@ const CakeDetails = ({ params }: Props) => {
             )
 
             toast.success(response.data.message);
-
             toast.success("Booking Successfully")
+
+            // WhatsApp message for Booking
+            const flavorNamesString =
+                flavor.length > 0
+                    ? flavor.map(f => f.flavorName).join(", ")
+                    : "Standard";
+
+            const message =
+                `👋 Hi, I want to book a cake:\n\n` +
+                `🍰 *Cake:* ${cakesDetails.title}\n` +
+                `⚖️ *Weight:* ${size?.weight || "N/A"}\n` +
+                `🍫 *Flavor Additions:* ${flavorNamesString}\n` +
+                `💳 *Extra Addons Cost:* ₹${extraFlavorPrice}\n\n` +
+                `📦 *Quantity:* ${quantity}\n` +
+                `💰 *Total Price:* ₹${totalPrice}\n\n` +
+                `👤 *Booking Details:*\n` +
+                `• *Name:* ${username}\n` +
+                `• *Phone:* ${phone}\n` +
+                `• *Address:* ${address}, ${pincode}\n` +
+                `• *Order Date:* ${orderDate}\n` +
+                `• *Pickup Date:* ${pickupdate}\n` +
+                `• *Instructions:* ${comment || "None"}`;
+
+            // Opens WhatsApp chat with the customer's phone number
+            const url = `https://wa.me/91${phone}?text=${encodeURIComponent(message)}`;
+            window.open(url, "_blank");
 
             setShippingOpen(false)
         } catch (error: any) {

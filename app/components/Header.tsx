@@ -6,48 +6,70 @@ import Image from "next/image";
 import { toast } from "sonner";
 import axios from "axios";
 import { api } from "../backendApi/api";
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation"; // 🟢 Added usePathname to trigger check on route change
 import { LogOut, User } from "lucide-react";
 
 const Header = () => {
   const [phone, setPhone] = useState<string | null>(null);
   const [isMounted, setIsMounted] = useState(false);
-  const [btnLoader, setBtnLoader] = useState(false)
+  const [btnLoader, setBtnLoader] = useState(false);
 
-  useEffect(() => {
-    setIsMounted(true);
+  const router = useRouter();
+  const pathname = usePathname(); // 🟢 Tracks the current URL path
+
+  // Helper function to sync auth state
+  const syncAuthState = () => {
     if (typeof window !== "undefined") {
       setPhone(localStorage.getItem("phone"));
     }
+  };
+
+  useEffect(() => {
+    setIsMounted(true);
+    syncAuthState();
+
+    // 🟢 1. Listen for storage changes across different tabs/windows
+    window.addEventListener("storage", syncAuthState);
+    
+    // 🟢 2. Custom event listener for instant login updates within the same tab
+    window.addEventListener("local-storage-update", syncAuthState);
+
+    return () => {
+      window.removeEventListener("storage", syncAuthState);
+      window.removeEventListener("local-storage-update", syncAuthState);
+    };
   }, []);
 
-  const router = useRouter();
+  // 🟢 3. Re-check state whenever the route/pathname changes (e.g., coming back from /login)
+  useEffect(() => {
+    syncAuthState();
+  }, [pathname]);
 
   const handleLogout = async () => {
     try {
-      setBtnLoader(true)
+      setBtnLoader(true);
       await axios.post(`${api}/api/userAuth/userLogout`, {}, { withCredentials: true });
 
       localStorage.removeItem("userId");
       localStorage.removeItem("username");
       localStorage.removeItem("phone");
+      
+      setPhone(null); // 🟢 Instantly update local state to hide logout button
 
       router.replace("/login");
-      toast.success("Logout")
+      toast.success("Logout successfully");
     } catch (error) {
       console.error(error);
       toast.error("Failed to log out. Please try again.");
     } finally {
-      setBtnLoader(false)
+      setBtnLoader(false);
     }
   };
 
   return (
     <header className="w-full bg-white text-neutral-800 border-b border-neutral-100 sticky top-0 z-50 backdrop-blur-md bg-white/95">
-      {/* 🟢 Height ko h-18 se h-14 (3.5rem) kiya taaki header sleek lage */}
       <div className="max-w-7xl mx-auto px-6 h-14 flex items-center justify-between">
 
-        {/* 🟢 Logo container ka size w-48 h-10 se badha kar w-56 h-12 kiya */}
         <div className="relative w-56 h-12 flex items-center">
           <Link href="/" underline="none" className="block relative w-full h-full transition-opacity hover:opacity-90">
             <Image
@@ -62,13 +84,13 @@ const Header = () => {
 
         {/* Navigation Actions */}
         <nav className="flex items-center gap-4">
-          {/* Prevent Hydration Layout Shift */}
           {!isMounted ? (
             <div className="w-24 h-9" />
           ) : phone ? (
             <Button
               onClick={handleLogout}
               variant="contained"
+              disabled={btnLoader}
               startIcon={<LogOut className="w-4 h-4" />}
               sx={{
                 background: "linear-gradient(135deg, #fb2c36 0%, #b81d24 100%)",
@@ -101,7 +123,7 @@ const Header = () => {
                 fontSize: "0.85rem",
                 borderRadius: "8px",
                 px: 3,
-                py: 0.9, // 🟢 Height ke hisab se padding minor adjust kiya
+                py: 0.9,
                 display: "inline-flex",
                 alignItems: "center",
                 gap: 1,

@@ -256,7 +256,7 @@ const ProductDetailsActions = ({
                     value={comment}
                     onChange={(e) => setComment(e.target.value)}
                     rows={2}
-                    className="w-full p-3.5 rounded-xl border border-stone-200 bg-white text-stone-700 text-xs placeholder:text-stone-400 focus:outline-none focus:ring-1 focus:ring-pink-600 focus:border-pink-600 transition-all duration-150 resize-none shadow-sm"
+                    className="w-full p-3.5 rounded-xl border border-stone-200 bg-white text-stone-700 text-lg placeholder:text-stone-400 focus:outline-none focus:ring-1 focus:ring-pink-600 focus:border-pink-600 transition-all duration-150 resize-none shadow-sm"
                 />
             </div>
 
