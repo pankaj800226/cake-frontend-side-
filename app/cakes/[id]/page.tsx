@@ -105,10 +105,33 @@ const CakeDetails = ({ params }: Props) => {
 
     const theme = useTheme();
     const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
-    const handleOpenDialog = () => setOpen(true);
+
+    // Protected Trigger for Table Order Dialog
+    const handleOpenDialog = () => {
+        const userId = typeof window !== "undefined" ? localStorage.getItem("userId") : null;
+        if (!userId) {
+            toast.error("Please login to place an order!");
+            const currentPath = window.location.pathname;
+            window.location.href = `/login?redirect=${encodeURIComponent(currentPath)}`;
+            return;
+        }
+        setOpen(true);
+    };
+
     const handleCloseDialog = () => setOpen(false);
 
-    const handleOpenShippingDialog = () => setShippingOpen(true)
+    // Protected Trigger for Shipping/Delivery Dialog
+    const handleOpenShippingDialog = () => {
+        const userId = typeof window !== "undefined" ? localStorage.getItem("userId") : null;
+        if (!userId) {
+            toast.error("Please login to book a delivery!");
+            const currentPath = window.location.pathname;
+            window.location.href = `/login?redirect=${encodeURIComponent(currentPath)}`;
+            return;
+        }
+        setShippingOpen(true);
+    };
+
     const handleCloseShippingDialog = () => setShippingOpen(false)
 
 
@@ -144,6 +167,10 @@ const CakeDetails = ({ params }: Props) => {
     // fetch shipping order
     useEffect(() => {
         const fetchBookingId = async () => {
+            // Check if user is logged in before fetching booking info to avoid unlogged console/API crashes
+            const userId = typeof window !== "undefined" ? localStorage.getItem("userId") : null;
+            if (!userId) return;
+
             try {
                 const res = await axios.get(
                     `${api}/api/booking/bookingInfo`,
@@ -160,18 +187,15 @@ const CakeDetails = ({ params }: Props) => {
                 });
 
             } catch (error: any) {
-                console.log(error);
-                toast.error(`error${error.message}`)
-                if (error.response?.status === 404) {
+                console.log("Guest user or booking fetch error:", error);
+                // Do not set global error if it's just a normal authentication mismatch for guest users
+                if (error.response?.status === 401 || error.response?.status === 403 || error.response?.status === 404) {
                     return;
                 }
                 setError(
                     error.response?.data?.message ||
                     error.message
                 );
-
-
-
             }
         }
 
