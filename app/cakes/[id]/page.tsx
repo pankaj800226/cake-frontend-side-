@@ -1,3 +1,4 @@
+// app/cakes/[id]/page.tsx
 "use client";
 
 import Image from "next/image";
@@ -6,26 +7,16 @@ import { FiArrowLeft } from "react-icons/fi";
 import Link from "next/link";
 import { motion } from "framer-motion";
 
-import {
-    Dialog,
-    DialogTitle,
-    DialogContent,
-    DialogActions,
-    TextField,
-    Button,
-    useMediaQuery,
-    useTheme
-} from "@mui/material";
-
-
 import { toast } from "sonner";
 import axios from "axios";
 import { api } from "@/app/backendApi/api";
-import Loading from "@/app/components/Loading";
 import Error from "@/app/components/Error";
 import ProductDetailsActions from "../ProductDetailsActions";
 import Rating from "@/app/home/RatingSystem/Rating";
 import MatchCategory from "../MatchCategory";
+import CakeDetailsSkeleton from "../../skeltonLoading/CakeDetailsSkeleton";
+import OrderDialog from "../dialog/OrderDialog";
+import BookingDialog from "../dialog/BookingDialog";
 
 interface CakeSize {
     weight: string;
@@ -36,7 +27,6 @@ interface CakeSize {
 interface CakeCategory {
     _id: string;
     categoryName: string;
-
 }
 
 interface CakeFlavor {
@@ -60,8 +50,8 @@ interface CakeItem {
 }
 
 type Props = {
-    params: Promise<{ id: string }>
-}
+    params: Promise<{ id: string }>;
+};
 
 const CakeDetails = ({ params }: Props) => {
     const { id } = use(params);
@@ -74,45 +64,20 @@ const CakeDetails = ({ params }: Props) => {
     const [open, setOpen] = useState(false);
     const [shippingInfoOpen, setShippingOpen] = useState(false);
     const [comment, setComment] = useState("");
-    const [error, setError] = useState('');
+    const [error, setError] = useState("");
     const [selectedImage, setSelectedImage] = useState(0);
     const [_, setRatings] = useState([]);
     const [averageRating, setAverageRating] = useState<number>(0);
 
-
-
-    // btn loading 
-    const [bookLoader, setBookLoader] = useState(false)
-    const [orderLoader, setOrderLoader] = useState(false)
-
-    // order state
-    const [shippingInfo, setShippingInfo] = useState({
-        username: "",
-        pincode: "",
-        address: "",
-        phone: "",
-        orderDate: "",
-        pickupdate: ""
-    })
-
-    // booking 
-    const [customer, setCustomer] = useState({
-        name: "",
-        phone: "",
-        tableNo: "",
-        date: ""
-    });
-
-    const theme = useTheme();
-    const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
-
-    // Protected Trigger for Table Order Dialog
     const handleOpenDialog = () => {
-        const userId = typeof window !== "undefined" ? localStorage.getItem("userId") : null;
+        const userId =
+            typeof window !== "undefined" ? localStorage.getItem("userId") : null;
         if (!userId) {
             toast.error("Please login to place an order!");
             const currentPath = window.location.pathname;
-            window.location.href = `/login?redirect=${encodeURIComponent(currentPath)}`;
+            window.location.href = `/login?redirect=${encodeURIComponent(
+                currentPath
+            )}`;
             return;
         }
         setOpen(true);
@@ -120,21 +85,21 @@ const CakeDetails = ({ params }: Props) => {
 
     const handleCloseDialog = () => setOpen(false);
 
-    // Protected Trigger for Shipping/Delivery Dialog
     const handleOpenShippingDialog = () => {
-        const userId = typeof window !== "undefined" ? localStorage.getItem("userId") : null;
+        const userId =
+            typeof window !== "undefined" ? localStorage.getItem("userId") : null;
         if (!userId) {
             toast.error("Please login to book a delivery!");
             const currentPath = window.location.pathname;
-            window.location.href = `/login?redirect=${encodeURIComponent(currentPath)}`;
+            window.location.href = `/login?redirect=${encodeURIComponent(
+                currentPath
+            )}`;
             return;
         }
         setShippingOpen(true);
     };
 
-    const handleCloseShippingDialog = () => setShippingOpen(false)
-
-
+    const handleCloseShippingDialog = () => setShippingOpen(false);
 
     useEffect(() => {
         setSelectedImage(0);
@@ -142,20 +107,20 @@ const CakeDetails = ({ params }: Props) => {
         setSelectedFlavors([0]);
     }, [cakesDetails]);
 
-    // cake id
     useEffect(() => {
         const fetchCakesId = async () => {
             try {
                 setLoading(true);
                 const res = await axios.get(`${api}/api/cakes/cakesSlug/${id}`);
                 setCakesDetails(res.data);
-            } catch (err: any) {
-                console.error("Error loading product detail:", err);
-                toast.error(`${err.message}`);
-                setError(
-                    err.response?.data?.message ||
-                    err.message
-                );
+            } catch (err: unknown) {
+                if (axios.isAxiosError(err)) {
+                    const message =
+                        err.response?.data?.message || err.message || "Something went wrong";
+
+                    toast.error(message);
+                    setError(message);
+                }
             } finally {
                 setLoading(false);
             }
@@ -164,308 +129,59 @@ const CakeDetails = ({ params }: Props) => {
         if (id) fetchCakesId();
     }, [id]);
 
-    // fetch shipping order
-    useEffect(() => {
-        const fetchBookingId = async () => {
-            // Check if user is logged in before fetching booking info to avoid unlogged console/API crashes
-            const userId = typeof window !== "undefined" ? localStorage.getItem("userId") : null;
-            if (!userId) return;
-
-            try {
-                const res = await axios.get(
-                    `${api}/api/booking/bookingInfo`,
-                    { withCredentials: true }
-                );
-
-                setShippingInfo({
-                    username: res.data.username,
-                    phone: res.data.phone,
-                    address: res.data.address,
-                    pincode: res.data.pincode,
-                    orderDate: res.data.orderDate?.split("T")[0],
-                    pickupdate: res.data.pickupdate?.split("T")[0],
-                });
-
-            } catch (error: any) {
-                console.log("Guest user or booking fetch error:", error);
-                // Do not set global error if it's just a normal authentication mismatch for guest users
-                if (error.response?.status === 401 || error.response?.status === 403 || error.response?.status === 404) {
-                    return;
-                }
-                setError(
-                    error.response?.data?.message ||
-                    error.message
-                );
-            }
-        }
-
-        fetchBookingId()
-    }, [id])
-
-
-    // fetch rating calculate
     useEffect(() => {
         if (!cakesDetails?._id) return;
 
         const fetchingRating = async () => {
             try {
-                const res = await axios.get(`${api}/api/rating/get/rating/${cakesDetails?._id}`);
-
-                const ratingData = res.data.rating || []
-                setRatings(ratingData)
-
-                //  calculate average
-
-                const avg = ratingData.length > 0
-                    ? ratingData.reduce(
-                        (sum: number, item: any) => sum + Number(item.rating), 0
-
-                    ) / ratingData.length
-                    : 0
-
-                setAverageRating(avg)
-
-
-
-            } catch (error: any) {
-                console.error("Error fetching ratings:", error);
-                toast.error(`${error.message}`)
-                setError(
-                    error.response?.data?.message ||
-                    error.message
+                const res = await axios.get(
+                    `${api}/api/rating/get/rating/${cakesDetails?._id}`
                 );
+
+                const ratingData = res.data.rating || [];
+                setRatings(ratingData);
+
+                const avg =
+                    ratingData.length > 0
+                        ? ratingData.reduce(
+                            (sum: number, item: { rating: string }) => sum + Number(item.rating),
+                            0
+                        ) / ratingData.length
+                        : 0;
+
+                setAverageRating(avg);
+            } catch (error: unknown) {
+                console.error("Error fetching ratings:", error);
+                if (axios.isAxiosError(error)) {
+                    toast.error(`${error.response?.data?.message || error.message}`);
+                    setError(error.response?.data?.message || error.message);
+                } else {
+                    toast.error("Something went wrong");
+                    setError("Something went wrong");
+                }
             }
         };
 
-        fetchingRating()
-    }, [cakesDetails?._id])
+        fetchingRating();
+    }, [cakesDetails?._id]);
 
-
-    if (!cakesDetails) return <Loading />;
+    if (loading) return <CakeDetailsSkeleton />;
+    if (!cakesDetails) return <CakeDetailsSkeleton />;
 
     const size = cakesDetails.sizes[selectedSize];
 
-    // convert index to object 
-    const flavor = cakesDetails.selectedFlavor?.filter((_, index) => selectedFlavors.includes(index)) || []
+    const flavor =
+        cakesDetails.selectedFlavor?.filter((_, index) =>
+            selectedFlavors.includes(index)
+        ) || [];
 
-    // price calculate
     const basePrice = size ? size.price : 0;
-    const extraFlavorPrice = flavor.reduce((sum, item) => sum + item.flavorsPrice, 0);
+    const extraFlavorPrice = flavor.reduce(
+        (sum, item) => sum + item.flavorsPrice,
+        0
+    );
     const totalPrice = (basePrice + extraFlavorPrice) * quantity;
 
-    // change booking 
-    const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const { name, value } = e.target;
-        if (name === "phone") {
-            const numbersOnly = value.replace(/[^0-9]/g, "");
-            setCustomer((prev) => ({ ...prev, [name]: numbersOnly }));
-            return;
-        }
-        setCustomer((prev) => ({ ...prev, [name]: value }));
-    };
-
-    // order change
-    const handleOrderInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const { name, value } = e.target;
-        if (name === "phone" || name === "pincode") {
-            const numbersOnly = value.replace(/[^0-9]/g, "");
-            setShippingInfo((prev) => ({ ...prev, [name]: numbersOnly }));
-            return;
-        }
-        setShippingInfo((prev) => ({ ...prev, [name]: value }))
-    }
-
-    // autometic pincode throught addres show
-    const handlePincodeChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
-        const pincode = e.target.value
-
-        setShippingInfo((prev) => ({
-            ...prev,
-            pincode
-        }))
-
-        if (pincode.length !== 6) return
-
-        try {
-            const res = await axios.get(
-                `https://api.postalpincode.in/pincode/${pincode}`
-            )
-
-            const office = res.data[0]?.PostOffice?.[0]
-
-            if (office) {
-                setShippingInfo((prev) => ({
-                    ...prev,
-                    pincode,
-                    address: `${office.Name}, ${office.District}, ${office.State}`,
-                }))
-
-            }
-        } catch (error: any) {
-            console.log(error);
-            setError(
-                error.response?.data?.message ||
-                error.message
-            );
-        }
-    }
-
-    // handle order 
-    const handleOrderSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-        e.preventDefault();
-
-        const { name, phone, date } = customer;
-
-        if (!name || !phone || !date) {
-            toast.error("All fields are required");
-            return;
-        }
-
-        try {
-            setOrderLoader(true);
-
-            const response = await axios.post(
-                `${api}/api/order/create/order`,
-                {
-                    cakeId: cakesDetails._id,
-                    selectedSize: size,
-                    selectedFlavor: flavor,
-                    quantity,
-                    totalPrice,
-                    comment,
-                    customer
-                },
-                { withCredentials: true }
-            );
-
-            toast.success(response.data.message);
-
-            // WhatsApp message
-            const flavorNamesString =
-                flavor.length > 0
-                    ? flavor.map(f => f.flavorName).join(", ")
-                    : "Standard";
-
-            const message =
-                `Hi, I want to order:\n\n` +
-                `🍰 *Cake:* ${cakesDetails.title}\n` +
-                `⚖️ *Weight:* ${size?.weight || "N/A"}\n` +
-                `🍫 *Flavor Additions:* ${flavorNamesString}\n` +
-                `💳 *Extra Addons Cost:* ₹${extraFlavorPrice}\n\n` +
-                `📦 *Quantity:* ${quantity}\n` +
-                `💰 *Total Price:* ₹${totalPrice}\n\n` +
-                `👤 *Customer Details:*\n` +
-                `• *Name:* ${customer.name}\n` +
-                `• *Phone:* ${customer.phone}\n` +
-                `• *Table No:* ${customer.tableNo}\n` +
-                `• *Date:* ${customer.date}\n` +
-                `• *Instructions:* ${comment || "None"}`;
-
-            const url = `https://wa.me/91${phone}?text=${encodeURIComponent(message)}`;
-
-            window.open(url, "_blank");
-
-            setOpen(false);
-
-        } catch (error: any) {
-            console.log(error);
-
-            toast.error(
-                error.response?.data?.message
-            );
-
-            setError(
-                error.response?.data?.message ||
-                error.message
-            );
-
-        } finally {
-            setOrderLoader(false);
-        }
-    };
-
-
-    // handle booking product
-    // handle booking product
-    const handleBookingNow = async (e: React.FormEvent<HTMLFormElement>) => {
-        e.preventDefault()
-        const { username, phone, address, pincode, orderDate, pickupdate } = shippingInfo
-
-        if (!username || !phone || !address || !pincode || !orderDate || !pickupdate) {
-            toast.error("All fields are required")
-            return
-        }
-
-        try {
-            setBookLoader(true)
-            const response = await axios.post(
-                `${api}/api/booking/product/book`,
-                {
-                    cakeId: cakesDetails._id,
-                    selectedSize: size,
-                    selectedFlavor: flavor,
-                    quantity,
-                    totalPrice,
-                    comment,
-                    username,
-                    phone,
-                    address,
-                    pincode,
-                    orderDate,
-                    pickupdate
-                },
-                { withCredentials: true }
-            )
-
-            toast.success(response.data.message);
-            toast.success("Booking Successfully")
-
-            // WhatsApp message for Booking
-            const flavorNamesString =
-                flavor.length > 0
-                    ? flavor.map(f => f.flavorName).join(", ")
-                    : "Standard";
-
-            const message =
-                `👋 Hi, I want to book a cake:\n\n` +
-                `🍰 *Cake:* ${cakesDetails.title}\n` +
-                `⚖️ *Weight:* ${size?.weight || "N/A"}\n` +
-                `🍫 *Flavor Additions:* ${flavorNamesString}\n` +
-                `💳 *Extra Addons Cost:* ₹${extraFlavorPrice}\n\n` +
-                `📦 *Quantity:* ${quantity}\n` +
-                `💰 *Total Price:* ₹${totalPrice}\n\n` +
-                `👤 *Booking Details:*\n` +
-                `• *Name:* ${username}\n` +
-                `• *Phone:* ${phone}\n` +
-                `• *Address:* ${address}, ${pincode}\n` +
-                `• *Order Date:* ${orderDate}\n` +
-                `• *Pickup Date:* ${pickupdate}\n` +
-                `• *Instructions:* ${comment || "None"}`;
-
-            // Opens WhatsApp chat with the customer's phone number
-            const url = `https://wa.me/91${phone}?text=${encodeURIComponent(message)}`;
-            window.open(url, "_blank");
-
-            setShippingOpen(false)
-        } catch (error: any) {
-            console.log(error);
-            setError(
-                error.response?.data?.message ||
-                error.message
-            );
-
-            toast.error(
-                error.response?.data?.message
-            );
-        } finally {
-            setBookLoader(false)
-        }
-    }
-
-    const today = new Date().toISOString().split("T")[0];
-
-
-    if (loading) return <Loading />;
     if (error) return <Error error={error} />;
 
     return (
@@ -487,7 +203,7 @@ const CakeDetails = ({ params }: Props) => {
                 transition={{ duration: 0.4, ease: "easeOut" }}
                 className="w-full max-w-[1400px] mx-auto flex flex-col lg:flex-row gap-8 xl:gap-12 items-stretch"
             >
-                {/* ================= LEFT SIDE: Image Gallery Panel ================= */}
+                {/* LEFT SIDE: Image Gallery Panel */}
                 <div className="w-full lg:w-[48%] xl:w-[52%] flex flex-col gap-4 flex-shrink-0">
                     <div className="relative w-full bg-white rounded-2xl md:rounded-3xl shadow-[0_8px_30px_rgb(219,39,119,0.015)] border border-pink-100/30 overflow-hidden">
                         <div className="w-full aspect-[4/3] sm:aspect-[16/11] md:aspect-[16/10] relative">
@@ -511,7 +227,6 @@ const CakeDetails = ({ params }: Props) => {
                         </div>
                     </div>
 
-                    {/* Thumbnails list mapping */}
                     {cakesDetails.photo && cakesDetails.photo.length > 1 && (
                         <div className="space-y-2 px-1">
                             <p className="text-[10px] text-stone-400 font-bold uppercase tracking-widest">
@@ -523,10 +238,17 @@ const CakeDetails = ({ params }: Props) => {
                                         key={index}
                                         onClick={() => setSelectedImage(index)}
                                         type="button"
-                                        className={`relative w-16 h-16 sm:w-20 sm:h-20 overflow-hidden rounded-xl border-2 transition-all duration-200 flex-shrink-0 ${selectedImage === index ? "border-pink-600 scale-105 shadow-sm" : "border-stone-200 hover:border-pink-200"
+                                        className={`relative w-16 h-16 sm:w-20 sm:h-20 overflow-hidden rounded-xl border-2 transition-all duration-200 flex-shrink-0 ${selectedImage === index
+                                            ? "border-pink-600 scale-105 shadow-sm"
+                                            : "border-stone-200 hover:border-pink-200"
                                             }`}
                                     >
-                                        <Image alt="Cake View" src={img} fill className="object-cover" />
+                                        <Image
+                                            alt="Cake View"
+                                            src={img}
+                                            fill
+                                            className="object-cover"
+                                        />
                                     </button>
                                 ))}
                             </div>
@@ -534,7 +256,7 @@ const CakeDetails = ({ params }: Props) => {
                     )}
                 </div>
 
-                {/* ================= RIGHT SIDE: Data & Choice Selection Form ================= */}
+                {/* RIGHT SIDE: Data & Choice Selection Form */}
                 <ProductDetailsActions
                     cakesDetails={cakesDetails}
                     selectedSize={selectedSize}
@@ -550,309 +272,37 @@ const CakeDetails = ({ params }: Props) => {
                     handleOpenShippingDialog={handleOpenShippingDialog}
                     averageRating={averageRating}
                 />
-            </motion.div >
+            </motion.div>
 
-            {/* ================= Complete Your Order (Order Now) CONTAINER ================= */}
-            <Dialog
+            {/* ORDER DIALOG */}
+            <OrderDialog
                 open={open}
                 onClose={handleCloseDialog}
-                fullScreen={isMobile}
-                maxWidth="xs"
-                fullWidth
-                slotProps={{
-                    paper: {
-                        sx: {
-                            borderRadius: isMobile ? "0px" : "20px",
-                            padding: { xs: "6px", sm: "12px" },
-                            boxShadow: "0 25px 50px -12px rgb(0 0 0 / 0.15)"
-                        }
-                    }
-                }}
-            >
-                <form onSubmit={handleOrderSubmit} className="flex flex-col h-full">
-                    {size && (
-                        <DialogTitle sx={{ fontFamily: 'serif', color: '#1c1917', pb: 1, pt: 3, px: 3, fontSize: '1.3rem', fontWeight: 900 }}>
-                            Complete Your Order
-                            <span className="block text-xs font-sans font-medium text-stone-500 mt-1.5 tracking-normal normal-case">
-                                Selected Item: <span className="text-pink-600 font-bold">{cakesDetails.title}</span> ({size.weight})
-                            </span>
-                        </DialogTitle>
-                    )}
+                cakesDetails={cakesDetails}
+                size={size}
+                flavor={flavor}
+                quantity={quantity}
+                totalPrice={totalPrice}
+                extraFlavorPrice={extraFlavorPrice}
+                comment={comment}
+            />
 
-                    <DialogContent sx={{ px: 3, py: 1.5, flexGrow: 1 }} className="space-y-4">
-                        <div className="space-y-4 pt-1">
-                            <TextField
-                                autoFocus
-                                fullWidth
-                                margin="dense"
-                                label="Full Name"
-                                name="name"
-                                variant="outlined"
-                                value={customer.name}
-                                onChange={handleInputChange}
-                                slotProps={{
-                                    inputLabel: { shrink: true },
-                                    htmlInput: { style: { fontSize: '0.9rem', padding: '12px' } }
-                                }}
-                            />
-
-                            <TextField
-                                fullWidth
-                                margin="dense"
-                                label="Phone Number"
-                                name="phone"
-                                type="tel"
-                                variant="outlined"
-                                value={customer.phone}
-                                onChange={handleInputChange}
-                                placeholder="98765XXXXX"
-                                slotProps={{
-                                    inputLabel: { shrink: true },
-                                    htmlInput: { style: { fontSize: '0.9rem', padding: '12px' }, maxLength: 10 }
-                                }}
-                            />
-
-                            <TextField
-                                fullWidth
-                                margin="dense"
-                                label="Table / Seat Number"
-                                type="date"
-                                name="tableNo"
-                                variant="outlined"
-                                value={customer.tableNo}
-                                onChange={handleInputChange}
-                                placeholder="E.g., Table 12"
-                                slotProps={{
-                                    inputLabel: { shrink: true },
-                                    htmlInput: {
-                                        min: today,   // 👈 disables previous dates
-                                        style: { fontSize: '0.9rem', padding: '12px' }
-                                    }
-                                }}
-                            />
-
-                            <TextField
-                                fullWidth
-                                margin="dense"
-                                label="Date"
-                                name="date"
-                                type="date"
-                                variant="outlined"
-                                value={customer.date}
-                                onChange={handleInputChange}
-                                slotProps={{
-                                    inputLabel: { shrink: true },
-                                    htmlInput: {
-                                        min: today,   // 👈 disables previous dates
-                                        style: { fontSize: '0.9rem', padding: '12px' }
-                                    }
-                                }}
-                            />
-                        </div>
-                    </DialogContent>
-
-                    <DialogActions sx={{ p: 3, pt: 1, gap: 1, mt: isMobile ? 'auto' : 0 }}>
-                        <Button
-                            onClick={handleCloseDialog}
-                            sx={{ color: '#57534e', textTransform: 'none', fontWeight: 700, fontSize: '0.9rem', py: 1 }}
-                        >
-                            Cancel
-                        </Button>
-
-                        <Button
-                            type="submit"
-                            variant="contained"
-                            disableElevation
-                            sx={{
-                                flexGrow: isMobile ? 1 : 0,
-                                backgroundColor: "#db2777",
-                                color: "#ffffff",
-                                textTransform: 'none',
-                                fontWeight: 800,
-                                fontSize: '0.9rem',
-                                px: 3,
-                                py: 1.2,
-                                borderRadius: '12px',
-                                '&:hover': { backgroundColor: "#be185d" }
-                            }}
-                        >
-                            {orderLoader ? "Loading ... " : "Order Now"}
-                        </Button>
-                    </DialogActions>
-                </form>
-            </Dialog >
-
-            {/* ================= Delivery Info (Book Now) CONTAINER ================= */}
-            <Dialog
+            {/* BOOKING DIALOG */}
+            <BookingDialog
                 open={shippingInfoOpen}
                 onClose={handleCloseShippingDialog}
-                fullScreen={isMobile}
-                maxWidth="xs"
-                fullWidth
-                slotProps={{
-                    paper: {
-                        sx: {
-                            borderRadius: isMobile ? "0px" : "20px",
-                            padding: { xs: "6px", sm: "12px" },
-                            boxShadow: "0 25px 50px -12px rgb(0 0 0 / 0.15)"
-                        }
-                    }
-                }}
-            >
-                <form onSubmit={handleBookingNow} className="flex flex-col h-full">
-                    {size && (
-                        <DialogTitle sx={{ fontFamily: 'serif', color: '#1c1917', pb: 1, pt: 3, px: 3, fontSize: '1.3rem', fontWeight: 900 }}>
-                            Complete Shipping Booking
-                            <span className="block text-xs font-sans font-medium text-stone-500 mt-1.5 tracking-normal normal-case">
-                                Selected Item: <span className="text-pink-600 font-bold">{cakesDetails.title}</span> ({size.weight})
-                            </span>
-                        </DialogTitle>
-                    )}
+                cakesDetails={cakesDetails}
+                size={size}
+                flavor={flavor}
+                quantity={quantity}
+                totalPrice={totalPrice}
+                extraFlavorPrice={extraFlavorPrice}
+                comment={comment}
+            />
 
-                    <DialogContent sx={{ px: 3, py: 1.5, flexGrow: 1 }} className="space-y-4">
-                        <div className="space-y-4 pt-1">
-                            <TextField
-                                autoFocus
-                                fullWidth
-                                margin="dense"
-                                label="Full Name"
-                                name="username"
-                                variant="outlined"
-                                placeholder="Full Name"
-                                value={shippingInfo.username}
-                                onChange={handleOrderInputChange}
-                                slotProps={{
-                                    inputLabel: { shrink: true },
-                                    htmlInput: { style: { fontSize: '0.9rem', padding: '12px' } }
-                                }}
-                            />
-
-                            <TextField
-                                fullWidth
-                                margin="dense"
-                                label="Phone Number"
-                                name="phone"
-                                type="tel"
-                                variant="outlined"
-                                placeholder="98765XXXXX"
-                                value={shippingInfo.phone}
-                                onChange={handleOrderInputChange}
-                                slotProps={{
-                                    inputLabel: { shrink: true },
-                                    htmlInput: { style: { fontSize: '0.9rem', padding: '12px' }, maxLength: 10 }
-                                }}
-                            />
-
-                            <TextField
-                                fullWidth
-                                margin="dense"
-                                label="Address"
-                                type="text"
-                                name="address"
-                                variant="outlined"
-                                placeholder="Patna"
-                                value={shippingInfo.address}
-                                onChange={handleOrderInputChange}
-                                slotProps={{
-                                    inputLabel: { shrink: true },
-                                    htmlInput: { style: { fontSize: '0.9rem', padding: '12px' } }
-                                }}
-                            />
-
-                            <TextField
-                                fullWidth
-                                margin="dense"
-                                label="Pincode"
-                                type="tel"
-                                name="pincode"
-                                variant="outlined"
-                                value={shippingInfo.pincode}
-                                onChange={handlePincodeChange}
-                                placeholder="800001"
-                                slotProps={{
-                                    inputLabel: { shrink: true },
-                                    htmlInput: { style: { fontSize: '0.9rem', padding: '12px' } }
-                                }}
-                            />
-
-                            <TextField
-                                fullWidth
-                                margin="dense"
-                                label="Order Date"
-                                type="date"
-                                name="orderDate"
-                                variant="outlined"
-                                value={shippingInfo.orderDate}
-                                onChange={handleOrderInputChange}
-                                slotProps={{
-                                    inputLabel: { shrink: true },
-                                    htmlInput: {
-                                        min: today,
-                                        style: { fontSize: '0.9rem', padding: '12px' }
-                                    }
-                                }}
-                            />
-
-                            <TextField
-                                fullWidth
-                                margin="dense"
-                                label="PickUp Date"
-                                name="pickupdate"
-                                type="date"
-                                variant="outlined"
-                                value={shippingInfo.pickupdate}
-                                onChange={handleOrderInputChange}
-                                slotProps={{
-                                    inputLabel: { shrink: true },
-                                    htmlInput: {
-                                        min: today,
-                                        style: { fontSize: '0.9rem', padding: '12px' }
-                                    }
-                                }}
-                            />
-                        </div>
-                    </DialogContent>
-
-                    <DialogActions sx={{ p: 3, pt: 1, gap: 1, mt: isMobile ? 'auto' : 0 }}>
-                        <Button
-                            onClick={handleCloseShippingDialog}
-                            sx={{ color: '#57534e', textTransform: 'none', fontWeight: 700, fontSize: '0.9rem', py: 1 }}
-                        >
-                            Cancel
-                        </Button>
-
-                        <Button
-                            type="submit"
-                            variant="contained"
-                            disableElevation
-                            sx={{
-                                flexGrow: isMobile ? 1 : 0,
-                                backgroundColor: "#db2777",
-                                color: "#ffffff",
-                                textTransform: 'none',
-                                fontWeight: 800,
-                                fontSize: '0.9rem',
-                                px: 3,
-                                py: 1.2,
-                                borderRadius: '12px',
-                                '&:hover': { backgroundColor: "#be185d" }
-                            }}
-                        >
-                            {bookLoader ? "Loading..." : "Book Now"}
-                        </Button>
-                    </DialogActions>
-                </form>
-            </Dialog >
-
-
-            {/* match categotry  */}
             <MatchCategory cakesDetails={cakesDetails} />
-
             <Rating cakeId={cakesDetails._id} />
-
-
-
-        </div >
+        </div>
     );
 };
 
